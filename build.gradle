@@ -1,0 +1,102 @@
+import org.gradle.api.artifacts.maven.MavenDeployment
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+group = 'com.adobe.yaozhang'
+version = '1.0.0'
+ext.packaging = 'jar'
+
+repositories {
+    mavenCentral()
+}
+
+configurations.compile {
+    resolutionStrategy.cacheChangingModulesFor 0, "seconds"
+}
+
+dependencies {
+    // junit testing
+    testCompile "junit:junit:4.11"
+}
+
+/** Function always returns a new manifest that can be customized */
+def defaultManifest() {
+    return manifest{
+        def git_cmd = "git rev-parse HEAD"
+        def git_proc = git_cmd.execute()
+        attributes 'SCM-Revision': git_proc.text.trim()
+        attributes 'Timestamp': String.valueOf(System.currentTimeMillis())
+        attributes 'Build-Host': InetAddress.localHost.hostName
+    }
+}
+
+jar {
+    manifest = defaultManifest()
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+    manifest = defaultManifest()
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+    manifest = defaultManifest()
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        if(version.contains("SNAPSHOT")) {
+            mavenLocal()
+        } else {
+            mavenDeployer {
+                // for staging/release
+                repository(url: "http://10.5.188.77:8081/nexus/content/repositories/releases/") {
+                    authentication(userName: "deployment", password: "tat4Deploy")
+                }
+
+                pom.project {
+                    name 'langdetect'
+                    description "This is the deployed version of Shuyo Language Detector."
+                    url 'https://github.com/shuyo/language-detection'
+                    licenses {
+                        license {
+                            name 'Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0'
+                            distribution 'repo'
+                        }
+                    }
+                    scm {
+                        url 'scm:https://github.com/shuyo/language-detection'
+                        connection 'scm:git@github.com:shuyo/language-detection.git'
+                        developerConnection 'scm:git@github.com:shuyo/language-detection.git'
+                    }
+                    developers {
+                        developer {
+                            id 'yaozhang'
+                            name 'Yao Zhang'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// enable Gradle Wrapper support for bootstrapping with specific version
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}
