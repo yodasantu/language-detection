@@ -8,7 +8,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 group = 'com.adobe.yaozhang'
-version = '1.0.0'
+version = '1.0.9'
 ext.packaging = 'jar'
 
 repositories {
@@ -20,9 +20,9 @@ sourceSets {
         java {
             srcDir 'src'
         }
-//        resources {
-//            srcDir 'src/resources'
-//        }
+        resources {
+            srcDir 'resources'
+        }
     }
 }
 
@@ -96,9 +96,9 @@ uploadArchives {
                 }
 
                 pom.project {
-                    groupId 'com.adobe.yaozhang'
+//                    groupId 'com.adobe.yaozhang'
                     artifactId 'language-detection'
-                    version '1.0.1'
+//                    version '1.0.1'
 
                     name 'langdetect'
                     description "This is the deployed version of Shuyo Language Detector."
